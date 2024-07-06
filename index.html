@@ -1,15 +1,55 @@
 <html>
     <head>
-        <titile>Tes Andi</titile>
+        <title>Tes MQTT Javascrpit</title>
+        <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     </head>
     <body>
-        <h3 id="demoo">ANDIIII</h3>
-        <button onclick="gantiWarna('green')">Nyala</button>
-        <button onclick="gantiWarna('red')">Mati</button>
+        <h1>Sistem IoT</h1>
+        <p>Status : <span id="statusKoneksiServer">Tidak diketahui</span></p>
+        <p>Suhu : <span id="statusSuhu">-</span> C</p>
+        <p>Kelembapan : <span id="statusKelembapan">-</span> %</p>
+        <p>Kondisi Button : <span id="statusBtn">Tidak diketahui</span></p>
+        <h4><b>Lampu</b></h4>
+        <button onclick="publishData('r')">Merah</button>
+        <button onclick="publishData('g')">Green</button>
+        <button onclick="publishData('b')">Blue</button>
+        <button onclick="publishData('off')">OFF</button>
+        <p>Status ESP: <span id="statusDeviceESP">Tidak diketahui</span></p>
     </body>
+
     <script>
-        function gantiWarna(payload) {
-          document.getElementById("demoo").style.color = payload;
+        const clientID = "userWebsite";
+        const host = "wss://serverbelajariot.cloud.shiftr.io:443";
+
+        const option = {
+            keepalive: 60,
+            clientID: clientID,
+            username: "serverbelajariot",
+            password: "inipasswordtokennya",
+            protocolId: "MQTT",
+            protocolVersion: 4,
+            // clean: false,
+            reconnectPeriod: 1000,
+            coneectTimeout: 30000,
+        };
+        console.log("Mengghubungkan ke broker");
+        const client = mqtt.connect(host, option);
+        client.subscribe("topikUtama/#", {qos: 1});
+
+        client.on("connect", () =>{
+            console.log("Terhubung ke broker. Client ID : " + clientID);
+            document.getElementById("statusKoneksiServer").innerHTML = "Terhubung";
+            document.getElementById("statusKoneksiServer").style.color = "green";
+        });
+
+        client.on("message", function(topik, payload){
+            if(topik == "topikUtama/publish/pushBtn"){
+                document.getElementById("statusBtn").innerHTML = payload;
+            }
+        });
+
+        function publishData(payload){
+            client.publish("topikUtama/subscribe/led", payload, {qos: 1, retain: false});
         }
-        </script>
+    </script>
 </html>
